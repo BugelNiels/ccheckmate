@@ -4,6 +4,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/time.h>
+
+#define ERROR_BUF_SIZE 20248
 
 #define CODE_BOLD "\e[1;37m"
 #define CODE_RESET "\x1B[0m"
@@ -15,15 +18,13 @@
 #define ARRAY_ERR_MSG(FORMAT) \
     "%s and %s, items at index %d do not match.\n\t\tExpected: " FORMAT "\n\t\tActual: " FORMAT "\n"
 
-// TODO: see if we can remove the global variables :o
+typedef char byte;
 
+// TODO: see if we can remove the global variables :o
 static int test_status = -1;
 static int passed = 0;
 static int failed = 0;
-static char err_msg[2048];
-
-typedef char byte;
-// TODO: print time
+static char err_msg[ERROR_BUF_SIZE];
 
 static void assert_err(const char *usrMsg, const char *file, const char *function, int line, const char *format, ...) {
     char *tmp = err_msg;
@@ -39,7 +40,7 @@ static void assert_err(const char *usrMsg, const char *file, const char *functio
 }
 
 static void warning(const char *format, ...) {
-    fprintf(stderr, "Warning: ");
+    fprintf(stderr, "%s Warning:%s ", CODE_ORANGE, CODE_RESET);
     va_list args;
     va_start(args, format);
     vfprintf(stderr, format, args);
@@ -355,8 +356,6 @@ void __assert_arr_eq_item(void *exp, void *act, int len_exp, int len_act, int el
                    len_exp, len_act);
         return;
     }
-
-    // Check that char is size 1
     byte *charA = (byte *)exp;
     byte *charB = (byte *)act;
     for (int i = 0; i < len_exp; i++) {
@@ -372,14 +371,12 @@ void __assert_arr_eq_item(void *exp, void *act, int len_exp, int len_act, int el
 }
 
 void start_section(const char *section_name) {
-#ifdef TEST
     // TODO: based on terminal width
     fprintf(stderr, "\n");
     print_divider();
     fprintf(stderr, "\t%sSection: %s%s\n", CODE_BOLD, section_name, CODE_RESET);
     print_divider();
     fprintf(stderr, "\n");
-#endif
 }
 
 static void __startTest(const char *test_name) {
@@ -391,7 +388,7 @@ static void __startTest(const char *test_name) {
     test_status = 1;
 }
 
-static void __endTest(const char *test_name) {
+static void __endTest(const char *test_name, struct timeval time) {
     if (test_status == -1) {
         warning("Cannot end exp test that has not been started yet.\n");
         return;
@@ -399,37 +396,38 @@ static void __endTest(const char *test_name) {
 
     if (test_status > 0) {
         passed++;
-        fprintf(stderr, "%s [Pass]%s %s%s%s\n", CODE_GREEN, CODE_RESET, CODE_BOLD, test_name, CODE_RESET);
+        fprintf(stderr, "%s [Pass]%s %s%s (%ld.%01lds)%s\n", CODE_GREEN, CODE_RESET, CODE_BOLD, test_name,
+                (size_t)time.tv_sec, (size_t)(time.tv_usec / 100000.0), CODE_RESET);
 
     } else {
         failed++;
-        fprintf(stderr, "%s [Fail]%s %s%s%s\n", CODE_RED, CODE_RESET, CODE_BOLD, test_name, CODE_RESET);
+        fprintf(stderr, "%s [Fail]%s %s%s (%ld.%01lds)%s\n", CODE_RED, CODE_RESET, CODE_BOLD, test_name,
+                (size_t)time.tv_sec, (size_t)(time.tv_usec / 100000.0), CODE_RESET);
         fprintf(stderr, "%s", err_msg);
     }
     test_status = -1;
 }
 
 void __execute_test(void (*fp)(), const char *name) {
-#ifdef TEST
+    struct timeval before = {};
+    struct timeval after = {};
+    struct timeval result = {};
     __startTest(name);
+    gettimeofday(&before, NULL);
     fp();
-    __endTest(name);
-#endif
+    gettimeofday(&after, NULL);
+    timersub(&after, &before, &result);
+    __endTest(name, result);
 }
 
-void start_test_suite() {
-#ifdef TEST
+void __start_test_suite() {
     fprintf(stderr, "Initializing test suite...\n");
     static int test_status = -1;
     static int passed = 0;
     static int failed = 0;
-#else
-    warning("Skipping tests...\n");
-#endif
 }
 
-void end_test_suite() {
-#ifdef TEST
+void __end_test_suite() {
     fprintf(stderr, "\n");
     print_divider();
     fprintf(stderr, "\n%sTests:%s ", CODE_BOLD, CODE_RESET);
@@ -454,5 +452,4 @@ void end_test_suite() {
     fprintf(stderr, "%s", CODE_RESET);
     fflush(stderr);
     exit(failed > 0 ? EXIT_FAILURE : EXIT_SUCCESS);
-#endif
 }

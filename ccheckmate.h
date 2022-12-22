@@ -1,6 +1,9 @@
 #ifndef C_CHECKMATE_H
 #define C_CHECKMATE_H
 
+#include <stdio.h>
+#include <stdlib.h>
+
 // TODO: default to error message for unrecongized types
 // TODO: do for all those lib functions
 #define assert_eq(A, B)                                 \
@@ -71,12 +74,22 @@
              : __assert_arr_eq_longdouble, default          \
              : __assert_arr_eq_item)(A, B, LEN_A, LEN_B, sizeof(*A), sizeof(*B), #A, #B, MSG, __FILE__, __FUNCTION__, __LINE__)
 
-#define c_test(func) __execute_test(func, #func)
+#define ccm_test(func) __execute_test(func, #func)
+
+#define BEGIN_CCHECK_MATE                     \
+    int __wrap_main(int argc, char *argv[]) { \
+        __start_test_suite();                   \
+        if (1)
+
+#define END_CCHECK_MATE \
+    __end_test_suite();   \
+    return 0;           \
+    }
 
 void start_section(const char *section_name);
 
-void start_test_suite();
-void end_test_suite();
+void __start_test_suite();
+void __end_test_suite();
 
 void __execute_test(void (*fp)(), const char *test_name);
 
