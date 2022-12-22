@@ -17,16 +17,16 @@
 
 // TODO: see if we can remove the global variables :o
 
-static int testStatus = -1;
+static int test_status = -1;
 static int passed = 0;
 static int failed = 0;
-static char errMsg[2048];
+static char err_msg[2048];
 
 typedef char byte;
+// TODO: print time
 
-static void assertError(const char *usrMsg, const char *file, const char *function, int line, const char *format, ...) {
-    // fprintf(stderr, "%s", CODE_BLUE);
-    char *tmp = errMsg;
+static void assert_err(const char *usrMsg, const char *file, const char *function, int line, const char *format, ...) {
+    char *tmp = err_msg;
     tmp += sprintf(tmp, "\t==> %s:%s():%d\n\t==> %sfailure: %s", file, function, line, CODE_RED, CODE_RESET);
     va_list args;
     va_start(args, format);
@@ -35,7 +35,7 @@ static void assertError(const char *usrMsg, const char *file, const char *functi
     if (strlen(usrMsg) > 0) {
         tmp += sprintf(tmp, "\t==> Message: %s\n", usrMsg);
     }
-    testStatus = 0;
+    test_status = 0;
 }
 
 static void warning(const char *format, ...) {
@@ -46,105 +46,106 @@ static void warning(const char *format, ...) {
     va_end(args);
 }
 
-static void printDivider() { fprintf(stderr, "--------------------------------------------------\n"); }
+// TODO: length dependent on terminal size?
+static void print_divider() { fprintf(stderr, "--------------------------------------------------\n"); }
 
 // Primitives
 
-void __assertCharEquals(char a, char b, const char *aName, const char *bName, const char *msg, const char *file,
-                        const char *function, int line) {
-    if (a != b) {
-        assertError(msg, file, function, line, PRIMITIVE_ERR_MSG("%c"), aName, bName, a, b);
+void __assert_eq_char(char exp, char act, const char *exp_name, const char *act_name, const char *msg, const char *file,
+                      const char *function, int line) {
+    if (exp != act) {
+        assert_err(msg, file, function, line, PRIMITIVE_ERR_MSG("%c"), exp_name, act_name, exp, act);
     }
 }
-void __assertuCharEquals(unsigned char a, unsigned char b, const char *aName, const char *bName, const char *msg,
-                         const char *file, const char *function, int line) {
-    if (a != b) {
-        assertError(msg, file, function, line, PRIMITIVE_ERR_MSG("%d"), aName, bName, a, b);
+void __assert_eq_uchar(unsigned char exp, unsigned char act, const char *exp_name, const char *act_name,
+                       const char *msg, const char *file, const char *function, int line) {
+    if (exp != act) {
+        assert_err(msg, file, function, line, PRIMITIVE_ERR_MSG("%d"), exp_name, act_name, exp, act);
     }
 }
 
-void __assertShortEquals(short a, short b, const char *aName, const char *bName, const char *msg, const char *file,
-                         const char *function, int line) {
-    if (a != b) {
-        assertError(msg, file, function, line, PRIMITIVE_ERR_MSG("%hd"), aName, bName, a, b);
+void __assert_eq_short(short exp, short act, const char *exp_name, const char *act_name, const char *msg,
+                       const char *file, const char *function, int line) {
+    if (exp != act) {
+        assert_err(msg, file, function, line, PRIMITIVE_ERR_MSG("%hd"), exp_name, act_name, exp, act);
     }
 }
-void __assertuShortEquals(unsigned short a, unsigned short b, const char *aName, const char *bName, const char *msg,
+void __assert_eq_ushort(unsigned short exp, unsigned short act, const char *exp_name, const char *act_name,
+                        const char *msg, const char *file, const char *function, int line) {
+    if (exp != act) {
+        assert_err(msg, file, function, line, PRIMITIVE_ERR_MSG("%hu"), exp_name, act_name, exp, act);
+    }
+}
+
+void __assert_eq_int(int exp, int act, const char *exp_name, const char *act_name, const char *msg, const char *file,
+                     const char *function, int line) {
+    if (exp != act) {
+        assert_err(msg, file, function, line, PRIMITIVE_ERR_MSG("%d"), exp_name, act_name, exp, act);
+    }
+}
+void __assert_eq_uint(unsigned int exp, unsigned int act, const char *exp_name, const char *act_name, const char *msg,
+                      const char *file, const char *function, int line) {
+    if (exp != act) {
+        assert_err(msg, file, function, line, PRIMITIVE_ERR_MSG("%u"), exp_name, act_name, exp, act);
+    }
+}
+
+void __assert_eq_long(long exp, long act, const char *exp_name, const char *act_name, const char *msg, const char *file,
+                      const char *function, int line) {
+    if (exp != act) {
+        assert_err(msg, file, function, line, PRIMITIVE_ERR_MSG("%ld"), exp_name, act_name, exp, act);
+    }
+}
+void __assert_eq_ulong(unsigned long exp, unsigned long act, const char *exp_name, const char *act_name,
+                       const char *msg, const char *file, const char *function, int line) {
+    if (exp != act) {
+        assert_err(msg, file, function, line, PRIMITIVE_ERR_MSG("%lu"), exp_name, act_name, exp, act);
+    }
+}
+
+void __assert_eq_longlong(long long exp, long long act, const char *exp_name, const char *act_name, const char *msg,
                           const char *file, const char *function, int line) {
-    if (a != b) {
-        assertError(msg, file, function, line, PRIMITIVE_ERR_MSG("%hu"), aName, bName, a, b);
+    if (exp != act) {
+        assert_err(msg, file, function, line, PRIMITIVE_ERR_MSG("%lld"), exp_name, act_name, exp, act);
     }
 }
-
-void __assertIntEquals(int a, int b, const char *aName, const char *bName, const char *msg, const char *file,
-                       const char *function, int line) {
-    if (a != b) {
-        assertError(msg, file, function, line, PRIMITIVE_ERR_MSG("%d"), aName, bName, a, b);
-    }
-}
-void __assertuIntEquals(unsigned int a, unsigned int b, const char *aName, const char *bName, const char *msg,
-                        const char *file, const char *function, int line) {
-    if (a != b) {
-        assertError(msg, file, function, line, PRIMITIVE_ERR_MSG("%u"), aName, bName, a, b);
-    }
-}
-
-void __assertLongEquals(long a, long b, const char *aName, const char *bName, const char *msg, const char *file,
-                        const char *function, int line) {
-    if (a != b) {
-        assertError(msg, file, function, line, PRIMITIVE_ERR_MSG("%ld"), aName, bName, a, b);
-    }
-}
-void __assertuLongEquals(unsigned long a, unsigned long b, const char *aName, const char *bName, const char *msg,
-                         const char *file, const char *function, int line) {
-    if (a != b) {
-        assertError(msg, file, function, line, PRIMITIVE_ERR_MSG("%lu"), aName, bName, a, b);
-    }
-}
-
-void __assertLongLongEquals(long long a, long long b, const char *aName, const char *bName, const char *msg,
-                            const char *file, const char *function, int line) {
-    if (a != b) {
-        assertError(msg, file, function, line, PRIMITIVE_ERR_MSG("%lld"), aName, bName, a, b);
-    }
-}
-void __assertuLongLongEquals(unsigned long long a, unsigned long long b, const char *aName, const char *bName,
-                             const char *msg, const char *file, const char *function, int line) {
-    if (a != b) {
-        assertError(msg, file, function, line, PRIMITIVE_ERR_MSG("%llu"), aName, bName, a, b);
-    }
-}
-
-void __assertFloatEquals(float a, float b, const char *aName, const char *bName, const char *msg, const char *file,
-                         const char *function, int line) {
-    if (a != b) {
-        assertError(msg, file, function, line, PRIMITIVE_ERR_MSG("%lf"), aName, bName, a, b);
-    }
-}
-void __assertDoubleEquals(double a, double b, const char *aName, const char *bName, const char *msg, const char *file,
-                          const char *function, int line) {
-    if (a != b) {
-        assertError(msg, file, function, line, PRIMITIVE_ERR_MSG("%lf"), aName, bName, a, b);
-    }
-}
-void __assertLongDoubleEquals(long double a, long double b, const char *aName, const char *bName, const char *msg,
-                              const char *file, const char *function, int line) {
-    if (a != b) {
-        assertError(msg, file, function, line, PRIMITIVE_ERR_MSG("%llf"), aName, bName, a, b);
-    }
-}
-
-void __assertItemEqualsMsg(void *a, void *b, int sizeA, int sizeB, const char *aName, const char *bName,
+void __assert_eq_ulonglong(unsigned long long exp, unsigned long long act, const char *exp_name, const char *act_name,
                            const char *msg, const char *file, const char *function, int line) {
-    if (sizeA != sizeB) {
-        assertError(msg, file, function, line, "%s and %s are not of the same type.", aName, bName);
+    if (exp != act) {
+        assert_err(msg, file, function, line, PRIMITIVE_ERR_MSG("%llu"), exp_name, act_name, exp, act);
+    }
+}
+
+void __assert_eq_float(float exp, float act, const char *exp_name, const char *act_name, const char *msg,
+                       const char *file, const char *function, int line) {
+    if (exp != act) {
+        assert_err(msg, file, function, line, PRIMITIVE_ERR_MSG("%lf"), exp_name, act_name, exp, act);
+    }
+}
+void __assert_eq_double(double exp, double act, const char *exp_name, const char *act_name, const char *msg,
+                        const char *file, const char *function, int line) {
+    if (exp != act) {
+        assert_err(msg, file, function, line, PRIMITIVE_ERR_MSG("%lf"), exp_name, act_name, exp, act);
+    }
+}
+void __assert_eq_longdouble(long double exp, long double act, const char *exp_name, const char *act_name,
+                            const char *msg, const char *file, const char *function, int line) {
+    if (exp != act) {
+        assert_err(msg, file, function, line, PRIMITIVE_ERR_MSG("%llf"), exp_name, act_name, exp, act);
+    }
+}
+
+void __assertItemEqualsMsg(void *exp, void *act, int elem_size_exp, int elem_size_b, const char *exp_name,
+                           const char *act_name, const char *msg, const char *file, const char *function, int line) {
+    if (elem_size_exp != elem_size_b) {
+        assert_err(msg, file, function, line, "%s and %s are not of the same type.", exp_name, act_name);
         return;
     }
-    byte *charA = (byte *)a;
-    byte *charB = (byte *)b;
-    for (int i = 0; i < sizeA; i++) {
+    byte *charA = (byte *)exp;
+    byte *charB = (byte *)act;
+    for (int i = 0; i < elem_size_exp; i++) {
         if (*charA != *charB) {
-            assertError(msg, file, function, line, "Items %s and %s are not equal.", aName, bName);
+            assert_err(msg, file, function, line, "Items %s and %s are not equal.", exp_name, act_name);
             return;
         }
         charA++;
@@ -152,12 +153,12 @@ void __assertItemEqualsMsg(void *a, void *b, int sizeA, int sizeB, const char *a
     }
 }
 
-int checkSize(int sizeA, int sizeB, const char *aName, const char *bName, const char *msg, const char *file,
-              const char *function, int line) {
-    if (sizeA != sizeB) {
-        assertError(msg, file, function, line,
-                    "%s and %s do not have the same length.\n\t\tExpected: %d\n\t\tActual: %d\n", aName, bName, sizeA,
-                    sizeB);
+int check_arr_size(int len_exp, int len_act, const char *exp_name, const char *act_name, const char *msg,
+                   const char *file, const char *function, int line) {
+    if (len_exp != len_act) {
+        assert_err(msg, file, function, line,
+                   "%s and %s do not have the same length.\n\t\tExpected: %d\n\t\tActual: %d\n", exp_name, act_name,
+                   len_exp, len_act);
         return 0;
     }
     return 1;
@@ -165,202 +166,203 @@ int checkSize(int sizeA, int sizeB, const char *aName, const char *bName, const 
 
 // Arrays
 
-void __assertCharArrayEquals(char *a, char *b, int sizeA, int sizeB, int elementSizeA, int elementSizeB,
-                             const char *aName, const char *bName, const char *msg, const char *file,
-                             const char *function, int line) {
-    if (!checkSize(sizeA, sizeB, aName, bName, msg, file, function, line)) {
+void __assert_arr_eq_char(char *exp, char *act, int len_exp, int len_act, int elem_size_exp, int elem_size_b,
+                          const char *exp_name, const char *act_name, const char *msg, const char *file,
+                          const char *function, int line) {
+    if (!check_arr_size(len_exp, len_act, exp_name, act_name, msg, file, function, line)) {
         return;
     }
-    for (int i = 0; i < sizeA; i++) {
-        if (a[i] != b[i]) {
-            assertError(msg, file, function, line, ARRAY_ERR_MSG("%c"), aName, bName, i, a[i], b[i]);
+    for (int i = 0; i < len_exp; i++) {
+        if (exp[i] != act[i]) {
+            assert_err(msg, file, function, line, ARRAY_ERR_MSG("%c"), exp_name, act_name, i, exp[i], act[i]);
             return;
         }
     }
 }
 
-void __assertuCharArrayEquals(unsigned char *a, unsigned char *b, int sizeA, int sizeB, int elementSizeA,
-                              int elementSizeB, const char *aName, const char *bName, const char *msg, const char *file,
-                              const char *function, int line) {
-    if (!checkSize(sizeA, sizeB, aName, bName, msg, file, function, line)) {
+void __assert_arr_eq_uchar(unsigned char *exp, unsigned char *act, int len_exp, int len_act, int elem_size_exp,
+                           int elem_size_b, const char *exp_name, const char *act_name, const char *msg,
+                           const char *file, const char *function, int line) {
+    if (!check_arr_size(len_exp, len_act, exp_name, act_name, msg, file, function, line)) {
         return;
     }
-    for (int i = 0; i < sizeA; i++) {
-        if (a[i] != b[i]) {
-            assertError(msg, file, function, line, ARRAY_ERR_MSG("%d"), aName, bName, i, a[i], b[i]);
+    for (int i = 0; i < len_exp; i++) {
+        if (exp[i] != act[i]) {
+            assert_err(msg, file, function, line, ARRAY_ERR_MSG("%d"), exp_name, act_name, i, exp[i], act[i]);
             return;
         }
     }
 }
 
-void __assertShortArrayEquals(short *a, short *b, int sizeA, int sizeB, int elementSizeA, int elementSizeB,
-                              const char *aName, const char *bName, const char *msg, const char *file,
-                              const char *function, int line) {
-    if (!checkSize(sizeA, sizeB, aName, bName, msg, file, function, line)) {
+void __assert_arr_eq_short(short *exp, short *act, int len_exp, int len_act, int elem_size_exp, int elem_size_b,
+                           const char *exp_name, const char *act_name, const char *msg, const char *file,
+                           const char *function, int line) {
+    if (!check_arr_size(len_exp, len_act, exp_name, act_name, msg, file, function, line)) {
         return;
     }
-    for (int i = 0; i < sizeA; i++) {
-        if (a[i] != b[i]) {
-            assertError(msg, file, function, line, ARRAY_ERR_MSG("%hd"), aName, bName, i, a[i], b[i]);
+    for (int i = 0; i < len_exp; i++) {
+        if (exp[i] != act[i]) {
+            assert_err(msg, file, function, line, ARRAY_ERR_MSG("%hd"), exp_name, act_name, i, exp[i], act[i]);
             return;
         }
     }
 }
-void __assertuShortArrayEquals(unsigned short *a, unsigned short *b, int sizeA, int sizeB, int elementSizeA,
-                               int elementSizeB, const char *aName, const char *bName, const char *msg,
-                               const char *file, const char *function, int line) {
-    if (!checkSize(sizeA, sizeB, aName, bName, msg, file, function, line)) {
+void __assert_arr_eq_ushort(unsigned short *exp, unsigned short *act, int len_exp, int len_act, int elem_size_exp,
+                            int elem_size_b, const char *exp_name, const char *act_name, const char *msg,
+                            const char *file, const char *function, int line) {
+    if (!check_arr_size(len_exp, len_act, exp_name, act_name, msg, file, function, line)) {
         return;
     }
-    for (int i = 0; i < sizeA; i++) {
-        if (a[i] != b[i]) {
-            assertError(msg, file, function, line, ARRAY_ERR_MSG("%hu"), aName, bName, i, a[i], b[i]);
-            return;
-        }
-    }
-}
-
-void __assertIntArrayEquals(int *a, int *b, int sizeA, int sizeB, int elementSizeA, int elementSizeB, const char *aName,
-                            const char *bName, const char *msg, const char *file, const char *function, int line) {
-    if (!checkSize(sizeA, sizeB, aName, bName, msg, file, function, line)) {
-        return;
-    }
-    for (int i = 0; i < sizeA; i++) {
-        if (a[i] != b[i]) {
-            assertError(msg, file, function, line, ARRAY_ERR_MSG("%d"), aName, bName, i, a[i], b[i]);
-            return;
-        }
-    }
-}
-void __assertuIntArrayEquals(unsigned int *a, unsigned int *b, int sizeA, int sizeB, int elementSizeA, int elementSizeB,
-                             const char *aName, const char *bName, const char *msg, const char *file,
-                             const char *function, int line) {
-    if (!checkSize(sizeA, sizeB, aName, bName, msg, file, function, line)) {
-        return;
-    }
-    for (int i = 0; i < sizeA; i++) {
-        if (a[i] != b[i]) {
-            assertError(msg, file, function, line, ARRAY_ERR_MSG("%u"), aName, bName, i, a[i], b[i]);
+    for (int i = 0; i < len_exp; i++) {
+        if (exp[i] != act[i]) {
+            assert_err(msg, file, function, line, ARRAY_ERR_MSG("%hu"), exp_name, act_name, i, exp[i], act[i]);
             return;
         }
     }
 }
 
-void __assertLongArrayEquals(long *a, long *b, int sizeA, int sizeB, int elementSizeA, int elementSizeB,
-                             const char *aName, const char *bName, const char *msg, const char *file,
-                             const char *function, int line) {
-    if (!checkSize(sizeA, sizeB, aName, bName, msg, file, function, line)) {
+void __assert_arr_eq_int(int *exp, int *act, int len_exp, int len_act, int elem_size_exp, int elem_size_b,
+                         const char *exp_name, const char *act_name, const char *msg, const char *file,
+                         const char *function, int line) {
+    if (!check_arr_size(len_exp, len_act, exp_name, act_name, msg, file, function, line)) {
         return;
     }
-    for (int i = 0; i < sizeA; i++) {
-        if (a[i] != b[i]) {
-            assertError(msg, file, function, line, ARRAY_ERR_MSG("%ld"), aName, bName, i, a[i], b[i]);
+    for (int i = 0; i < len_exp; i++) {
+        if (exp[i] != act[i]) {
+            assert_err(msg, file, function, line, ARRAY_ERR_MSG("%d"), exp_name, act_name, i, exp[i], act[i]);
             return;
         }
     }
 }
-void __assertuLongArrayEquals(unsigned long *a, unsigned long *b, int sizeA, int sizeB, int elementSizeA,
-                              int elementSizeB, const char *aName, const char *bName, const char *msg, const char *file,
-                              const char *function, int line) {
-    if (!checkSize(sizeA, sizeB, aName, bName, msg, file, function, line)) {
+void __assert_arr_eq_uint(unsigned int *exp, unsigned int *act, int len_exp, int len_act, int elem_size_exp,
+                          int elem_size_b, const char *exp_name, const char *act_name, const char *msg,
+                          const char *file, const char *function, int line) {
+    if (!check_arr_size(len_exp, len_act, exp_name, act_name, msg, file, function, line)) {
         return;
     }
-    for (int i = 0; i < sizeA; i++) {
-        if (a[i] != b[i]) {
-            assertError(msg, file, function, line, ARRAY_ERR_MSG("%lu"), aName, bName, i, a[i], b[i]);
-            return;
-        }
-    }
-}
-
-void __assertLongLongArrayEquals(long long *a, long long *b, int sizeA, int sizeB, int elementSizeA, int elementSizeB,
-                                 const char *aName, const char *bName, const char *msg, const char *file,
-                                 const char *function, int line) {
-    if (!checkSize(sizeA, sizeB, aName, bName, msg, file, function, line)) {
-        return;
-    }
-    for (int i = 0; i < sizeA; i++) {
-        if (a[i] != b[i]) {
-            assertError(msg, file, function, line, ARRAY_ERR_MSG("%lld"), aName, bName, i, a[i], b[i]);
-            return;
-        }
-    }
-}
-void __assertuLongLongArrayEquals(unsigned long long *a, unsigned long long *b, int sizeA, int sizeB, int elementSizeA,
-                                  int elementSizeB, const char *aName, const char *bName, const char *msg,
-                                  const char *file, const char *function, int line) {
-    if (!checkSize(sizeA, sizeB, aName, bName, msg, file, function, line)) {
-        return;
-    }
-    for (int i = 0; i < sizeA; i++) {
-        if (a[i] != b[i]) {
-            assertError(msg, file, function, line, ARRAY_ERR_MSG("%llu"), aName, bName, i, a[i], b[i]);
+    for (int i = 0; i < len_exp; i++) {
+        if (exp[i] != act[i]) {
+            assert_err(msg, file, function, line, ARRAY_ERR_MSG("%u"), exp_name, act_name, i, exp[i], act[i]);
             return;
         }
     }
 }
 
-void __assertFloatArrayEquals(float *a, float *b, int sizeA, int sizeB, int elementSizeA, int elementSizeB,
-                              const char *aName, const char *bName, const char *msg, const char *file,
-                              const char *function, int line) {
-    if (!checkSize(sizeA, sizeB, aName, bName, msg, file, function, line)) {
+void __assert_arr_eq_long(long *exp, long *act, int len_exp, int len_act, int elem_size_exp, int elem_size_b,
+                          const char *exp_name, const char *act_name, const char *msg, const char *file,
+                          const char *function, int line) {
+    if (!check_arr_size(len_exp, len_act, exp_name, act_name, msg, file, function, line)) {
         return;
     }
-    for (int i = 0; i < sizeA; i++) {
-        if (a[i] != b[i]) {
-            assertError(msg, file, function, line, ARRAY_ERR_MSG("%lf"), aName, bName, i, a[i], b[i]);
+    for (int i = 0; i < len_exp; i++) {
+        if (exp[i] != act[i]) {
+            assert_err(msg, file, function, line, ARRAY_ERR_MSG("%ld"), exp_name, act_name, i, exp[i], act[i]);
             return;
         }
     }
 }
-void __assertDoubleArrayEquals(double *a, double *b, int sizeA, int sizeB, int elementSizeA, int elementSizeB,
-                               const char *aName, const char *bName, const char *msg, const char *file,
-                               const char *function, int line) {
-    if (!checkSize(sizeA, sizeB, aName, bName, msg, file, function, line)) {
+void __assert_arr_eq_ulong(unsigned long *exp, unsigned long *act, int len_exp, int len_act, int elem_size_exp,
+                           int elem_size_b, const char *exp_name, const char *act_name, const char *msg,
+                           const char *file, const char *function, int line) {
+    if (!check_arr_size(len_exp, len_act, exp_name, act_name, msg, file, function, line)) {
         return;
     }
-    for (int i = 0; i < sizeA; i++) {
-        if (a[i] != b[i]) {
-            assertError(msg, file, function, line, ARRAY_ERR_MSG("%lf"), aName, bName, i, a[i], b[i]);
-            return;
-        }
-    }
-}
-void __assertLongDoubleArrayEquals(long double *a, long double *b, int sizeA, int sizeB, int elementSizeA,
-                                   int elementSizeB, const char *aName, const char *bName, const char *msg,
-                                   const char *file, const char *function, int line) {
-    if (!checkSize(sizeA, sizeB, aName, bName, msg, file, function, line)) {
-        return;
-    }
-    for (int i = 0; i < sizeA; i++) {
-        if (a[i] != b[i]) {
-            assertError(msg, file, function, line, ARRAY_ERR_MSG("%llf"), aName, bName, i, a[i], b[i]);
+    for (int i = 0; i < len_exp; i++) {
+        if (exp[i] != act[i]) {
+            assert_err(msg, file, function, line, ARRAY_ERR_MSG("%lu"), exp_name, act_name, i, exp[i], act[i]);
             return;
         }
     }
 }
 
-void __assertItemArrayEqualsMsg(void *a, void *b, int sizeA, int sizeB, int elementSizeA, int elementSizeB,
-                                const char *aName, const char *bName, const char *msg, const char *file,
-                                const char *function, int line) {
-    if (elementSizeA != elementSizeB) {
-        assertError(msg, file, function, line, "%s and %s do not contain equal types.", aName, bName);
+void __assert_arr_eq_longlong(long long *exp, long long *act, int len_exp, int len_act, int elem_size_exp,
+                              int elem_size_b, const char *exp_name, const char *act_name, const char *msg,
+                              const char *file, const char *function, int line) {
+    if (!check_arr_size(len_exp, len_act, exp_name, act_name, msg, file, function, line)) {
         return;
     }
-    if (sizeA != sizeB) {
-        assertError(msg, file, function, line,
-                    "%s and %s do not have the same length.\n\t\tExpected: %d\n\t\tActual: %d\n", aName, bName, sizeA,
-                    sizeB);
+    for (int i = 0; i < len_exp; i++) {
+        if (exp[i] != act[i]) {
+            assert_err(msg, file, function, line, ARRAY_ERR_MSG("%lld"), exp_name, act_name, i, exp[i], act[i]);
+            return;
+        }
+    }
+}
+void __assert_arr_eq_ulonglong(unsigned long long *exp, unsigned long long *act, int len_exp, int len_act,
+                               int elem_size_exp, int elem_size_b, const char *exp_name, const char *act_name,
+                               const char *msg, const char *file, const char *function, int line) {
+    if (!check_arr_size(len_exp, len_act, exp_name, act_name, msg, file, function, line)) {
+        return;
+    }
+    for (int i = 0; i < len_exp; i++) {
+        if (exp[i] != act[i]) {
+            assert_err(msg, file, function, line, ARRAY_ERR_MSG("%llu"), exp_name, act_name, i, exp[i], act[i]);
+            return;
+        }
+    }
+}
+
+void __assert_arr_eq_float(float *exp, float *act, int len_exp, int len_act, int elem_size_exp, int elem_size_b,
+                           const char *exp_name, const char *act_name, const char *msg, const char *file,
+                           const char *function, int line) {
+    if (!check_arr_size(len_exp, len_act, exp_name, act_name, msg, file, function, line)) {
+        return;
+    }
+    for (int i = 0; i < len_exp; i++) {
+        if (exp[i] != act[i]) {
+            assert_err(msg, file, function, line, ARRAY_ERR_MSG("%lf"), exp_name, act_name, i, exp[i], act[i]);
+            return;
+        }
+    }
+}
+void __assert_arr_eq_double(double *exp, double *act, int len_exp, int len_act, int elem_size_exp, int elem_size_b,
+                            const char *exp_name, const char *act_name, const char *msg, const char *file,
+                            const char *function, int line) {
+    if (!check_arr_size(len_exp, len_act, exp_name, act_name, msg, file, function, line)) {
+        return;
+    }
+    for (int i = 0; i < len_exp; i++) {
+        if (exp[i] != act[i]) {
+            assert_err(msg, file, function, line, ARRAY_ERR_MSG("%lf"), exp_name, act_name, i, exp[i], act[i]);
+            return;
+        }
+    }
+}
+void __assert_arr_eq_longdouble(long double *exp, long double *act, int len_exp, int len_act, int elem_size_exp,
+                                int elem_size_b, const char *exp_name, const char *act_name, const char *msg,
+                                const char *file, const char *function, int line) {
+    if (!check_arr_size(len_exp, len_act, exp_name, act_name, msg, file, function, line)) {
+        return;
+    }
+    for (int i = 0; i < len_exp; i++) {
+        if (exp[i] != act[i]) {
+            assert_err(msg, file, function, line, ARRAY_ERR_MSG("%llf"), exp_name, act_name, i, exp[i], act[i]);
+            return;
+        }
+    }
+}
+
+void __assert_arr_eq_item(void *exp, void *act, int len_exp, int len_act, int elem_size_exp, int elem_size_b,
+                          const char *exp_name, const char *act_name, const char *msg, const char *file,
+                          const char *function, int line) {
+    if (elem_size_exp != elem_size_b) {
+        assert_err(msg, file, function, line, "%s and %s do not contain equal types.", exp_name, act_name);
+        return;
+    }
+    if (len_exp != len_act) {
+        assert_err(msg, file, function, line,
+                   "%s and %s do not have the same length.\n\t\tExpected: %d\n\t\tActual: %d\n", exp_name, act_name,
+                   len_exp, len_act);
         return;
     }
 
     // Check that char is size 1
-    byte *charA = (byte *)a;
-    byte *charB = (byte *)b;
-    for (int i = 0; i < sizeA; i++) {
-        for (int j = 0; j < elementSizeA; j++) {
+    byte *charA = (byte *)exp;
+    byte *charB = (byte *)act;
+    for (int i = 0; i < len_exp; i++) {
+        for (int j = 0; j < elem_size_exp; j++) {
             if (*charA != *charB) {
-                assertError(msg, file, function, line, "%s and %s do not match at index %d\n", aName, bName, i);
+                assert_err(msg, file, function, line, "%s and %s do not match at index %d\n", exp_name, act_name, i);
                 return;
             }
             charA++;
@@ -369,58 +371,58 @@ void __assertItemArrayEqualsMsg(void *a, void *b, int sizeA, int sizeB, int elem
     }
 }
 
-void startSection(const char *sectionName) {
+void start_section(const char *section_name) {
     // TODO: based on terminal width
     fprintf(stderr, "\n");
-    printDivider();
-    fprintf(stderr, "\t%sSection: %s%s\n", CODE_BOLD, sectionName, CODE_RESET);
-    printDivider();
+    print_divider();
+    fprintf(stderr, "\t%sSection: %s%s\n", CODE_BOLD, section_name, CODE_RESET);
+    print_divider();
     fprintf(stderr, "\n");
 }
 
-static void __startTest(const char *testName) {
-    if (testStatus != -1) {
-        warning("Cannot start a test while the previous test has not been terminated.\n");
+static void __startTest(const char *test_name) {
+    if (test_status != -1) {
+        warning("Cannot start exp test while the previous test has not been terminated.\n");
         return;
     }
-    errMsg[0] = '\0';
-    testStatus = 1;
+    err_msg[0] = '\0';
+    test_status = 1;
 }
 
-static void __endTest(const char *testName) {
-    if (testStatus == -1) {
-        warning("Cannot end a test that has not been started yet.\n");
+static void __endTest(const char *test_name) {
+    if (test_status == -1) {
+        warning("Cannot end exp test that has not been started yet.\n");
         return;
     }
 
-    if (testStatus > 0) {
+    if (test_status > 0) {
         passed++;
-        fprintf(stderr, "%s [Pass]%s %s%s%s\n", CODE_GREEN, CODE_RESET, CODE_BOLD, testName, CODE_RESET);
+        fprintf(stderr, "%s [Pass]%s %s%s%s\n", CODE_GREEN, CODE_RESET, CODE_BOLD, test_name, CODE_RESET);
 
     } else {
         failed++;
-        fprintf(stderr, "%s [Fail]%s %s%s%s\n", CODE_RED, CODE_RESET, CODE_BOLD, testName, CODE_RESET);
-        fprintf(stderr, "%s", errMsg);
+        fprintf(stderr, "%s [Fail]%s %s%s%s\n", CODE_RED, CODE_RESET, CODE_BOLD, test_name, CODE_RESET);
+        fprintf(stderr, "%s", err_msg);
     }
-    testStatus = -1;
+    test_status = -1;
 }
 
-void __executeTest(void (*fp)(), const char *name) {
+void __execute_test(void (*fp)(), const char *name) {
     __startTest(name);
     fp();
     __endTest(name);
 }
 
-void startTestSuite() {
+void start_test_suite() {
     fprintf(stderr, "Initializing test suite...\n");
-    static int testStatus = -1;
+    static int test_status = -1;
     static int passed = 0;
     static int failed = 0;
 }
 
-void endTestSuite() {
+void end_test_suite() {
     fprintf(stderr, "\n");
-    printDivider();
+    print_divider();
     fprintf(stderr, "\n%sTests:%s ", CODE_BOLD, CODE_RESET);
     if (passed > 0) {
         fprintf(stderr, "%s%d Passed%s, ", CODE_GREEN, passed, CODE_RESET);
