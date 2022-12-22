@@ -1,8 +1,3 @@
-
-#define TEST
-
-
-#ifdef TEST
 #include <stdio.h>
 #include <stdlib.h>
 #include "ccheckmate.h"
@@ -95,5 +90,3 @@ int main(int argc, char *argv[]) {
     end_test_suite();
     return 0;
 }
-
-#endif

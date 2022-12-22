@@ -74,8 +74,10 @@
 #define c_test(func) __execute_test(func, #func)
 
 void start_section(const char *section_name);
+
 void start_test_suite();
 void end_test_suite();
+
 void __execute_test(void (*fp)(), const char *test_name);
 
 // primitives

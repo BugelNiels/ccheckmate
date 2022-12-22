@@ -372,12 +372,14 @@ void __assert_arr_eq_item(void *exp, void *act, int len_exp, int len_act, int el
 }
 
 void start_section(const char *section_name) {
+#ifdef TEST
     // TODO: based on terminal width
     fprintf(stderr, "\n");
     print_divider();
     fprintf(stderr, "\t%sSection: %s%s\n", CODE_BOLD, section_name, CODE_RESET);
     print_divider();
     fprintf(stderr, "\n");
+#endif
 }
 
 static void __startTest(const char *test_name) {
@@ -408,19 +410,26 @@ static void __endTest(const char *test_name) {
 }
 
 void __execute_test(void (*fp)(), const char *name) {
+#ifdef TEST
     __startTest(name);
     fp();
     __endTest(name);
+#endif
 }
 
 void start_test_suite() {
+#ifdef TEST
     fprintf(stderr, "Initializing test suite...\n");
     static int test_status = -1;
     static int passed = 0;
     static int failed = 0;
+#else
+    warning("Skipping tests...\n");
+#endif
 }
 
 void end_test_suite() {
+#ifdef TEST
     fprintf(stderr, "\n");
     print_divider();
     fprintf(stderr, "\n%sTests:%s ", CODE_BOLD, CODE_RESET);
@@ -444,4 +453,6 @@ void end_test_suite() {
     }
     fprintf(stderr, "%s", CODE_RESET);
     fflush(stderr);
+    exit(failed > 0 ? EXIT_FAILURE : EXIT_SUCCESS);
+#endif
 }
