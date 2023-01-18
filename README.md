@@ -119,8 +119,6 @@ Running `./a.out` will then produce the following output:
 
 Tests: 2 Passed, 1 Failed, 3 Total
 There are test failures.
-
-
 ```
 
 ## Functions and macros
@@ -130,12 +128,12 @@ There are test failures.
 ### Assertions
 
 ```C
-assert_true(int)
+assert_true(bool)
 ```
 Asserts whether the integer evaluates to true (not 0).
 
 ```C
-assert_false(int)
+assert_false(bool)
 ```
 Asserts whether the integer evaluates to false (0).
 
