@@ -3,8 +3,6 @@
 
 #include "../ccheckmate.h"
 
-ccm_begin_section;
-
 ccm_test(testAssertTrue) {
   int x = 7;
   assert_true(x);
@@ -18,5 +16,3 @@ ccm_test(testAssertFalse) {
   assert_false(0);
   assert_false(3 < 5);
 }
-
-ccm_end_section(bool_tests)

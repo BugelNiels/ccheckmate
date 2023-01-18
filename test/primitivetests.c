@@ -3,8 +3,6 @@
 
 #include "../ccheckmate.h"
 
-ccm_begin_section;
-
 ccm_test(testVariableEqualLiteral) {
   int a = 0;
   assert_eq(a, 1);
@@ -54,5 +52,3 @@ ccm_test(testVariableEqualMsg) {
   int b = 1;
   assert_eq_msg(a, b, "Variables are not equal");
 }
-
-ccm_end_section(primitive_tests)

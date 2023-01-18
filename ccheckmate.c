@@ -6,7 +6,7 @@
 #include <string.h>
 #include <sys/time.h>
 
-#define ERROR_BUF_SIZE 20248
+#define ERROR_BUF_SIZE 2048
 
 #define CODE_BOLD "\x1B[1;37m"
 #define CODE_RESET "\x1B[0m"
@@ -30,6 +30,15 @@ static int passed = 0;
 static int failed = 0;
 static char err_msg[ERROR_BUF_SIZE];
 
+struct __func_list {
+  struct __func_list *next;
+  void (*f)(void);
+  char *func_name;
+  char *section_name;
+};
+
+struct __func_list *funcs = NULL;
+
 static void assert_err(const char *usrMsg, const char *file, const char *function, int line, const char *format, ...) {
   char *tmp = err_msg;
   tmp += sprintf(tmp, "\t==> %s:%s():%d\n\t==> %sfailure: %s", file, function, line, CODE_RED, CODE_RESET);
@@ -49,6 +58,25 @@ static void warning(const char *format, ...) {
   va_start(args, format);
   vfprintf(stderr, format, args);
   va_end(args);
+}
+
+void __testfunc_list_add(void (*f)(void), char *name, char *sec_name) {
+  struct __func_list *item = malloc(sizeof(struct __func_list));
+  item->next = NULL;
+  item->f = f;
+  item->func_name = name;
+  // TODO: trim c extension
+  item->section_name = sec_name;
+
+  if (funcs == NULL) {
+    funcs = item;
+  } else {
+    struct __func_list *cur = funcs;
+    while (cur->next != NULL) {
+      cur = cur->next;
+    }
+    cur->next = item;
+  }
 }
 
 // TODO: length dependent on terminal size?
@@ -388,7 +416,7 @@ void __assert_arr_eq_item(void *exp, void *act, int len_exp, int len_act, int el
   }
 }
 
-void __start_section(const char *section_name) {
+void start_section(const char *section_name) {
   // TODO: based on terminal width
   fprintf(stderr, "\n");
   print_divider();
@@ -426,7 +454,7 @@ static void __endTest(const char *test_name, struct timeval time) {
   test_status = -1;
 }
 
-void __execute_test(void (*fp)(), const char *name) {
+void execute_test(void (*fp)(), const char *name) {
   struct timeval before = {0};
   struct timeval after = {0};
   struct timeval result = {0};
@@ -438,14 +466,13 @@ void __execute_test(void (*fp)(), const char *name) {
   __endTest(name, result);
 }
 
-void __start_test_suite() {
-  fprintf(stderr, "Initializing test suite...\n");
+void start_test_suite() {
   test_status = -1;
   passed = 0;
   failed = 0;
 }
 
-void __end_test_suite() {
+void end_test_suite() {
   fprintf(stderr, "\n");
   print_divider();
   fprintf(stderr, "\n%sTests:%s ", CODE_BOLD, CODE_RESET);
@@ -470,4 +497,20 @@ void __end_test_suite() {
   fprintf(stderr, "%s", CODE_RESET);
   fflush(stderr);
   exit(failed > 0 ? EXIT_FAILURE : EXIT_SUCCESS);
+}
+
+int __wrap_main(int argc, char *argv[]) {
+  start_test_suite();
+  struct __func_list *cur;
+  char *secName = NULL;
+  for (cur = funcs; cur; cur = cur->next) {
+    if (secName == NULL || strcmp(secName, cur->section_name) != 0) {
+        start_section(cur->section_name);
+        secName = cur->section_name;
+    }
+    execute_test(cur->f, cur->func_name);
+  }
+
+  end_test_suite();
+  return 0;
 }
