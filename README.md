@@ -121,6 +121,8 @@ Tests: 2 Passed, 1 Failed, 3 Total
 There are test failures.
 ```
 
+Alternatively, you can use the `runexample.sh` script which will do the compilation and execution steps automatically.
+
 ## Functions and macros
 
 > Disclaimer: The framework works primarily with macros to facilitate flexible and easy-to-read usage. However, this can potentially result in large error messages if you get the syntax wrong. It is definitely possible to see what is going wrong, but this can be more difficult due to the macro expansions As such, always be sure to double check that you are using it in the correct way.
