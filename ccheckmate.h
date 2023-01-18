@@ -13,7 +13,7 @@
   return 0;                \
   }
 
-#define ccm_start_section                                            \
+#define ccm_begin_section                                            \
   struct __func_list {                                               \
     struct __func_list *next;                                        \
     void (*f)(void);                                                 \

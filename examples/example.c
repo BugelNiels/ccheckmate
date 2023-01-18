@@ -1,6 +1,6 @@
 #include "../ccheckmate.h"
 
-ccm_start_section;
+ccm_begin_section;
 
 ccm_test(testEqual) {
   int expected = 2;

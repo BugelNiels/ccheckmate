@@ -3,7 +3,7 @@
 
 #include "../ccheckmate.h"
 
-ccm_start_section
+ccm_begin_section;
 
 ccm_test(testAssertTrue) {
   int x = 7;
