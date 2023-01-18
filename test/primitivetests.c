@@ -5,20 +5,6 @@
 
 ccm_begin_section;
 
-ccm_test(testAssertTrue) {
-  int x = 7;
-  assert_true(x);
-  assert_true(1);
-  assert_true(3 > 5);
-}
-
-ccm_test(testAssertFalse) {
-  int x = 0;
-  assert_false(x);
-  assert_false(0);
-  assert_false(3 < 5);
-}
-
 ccm_test(testVariableEqualLiteral) {
   int a = 0;
   assert_eq(a, 1);
@@ -69,33 +55,4 @@ ccm_test(testVariableEqualMsg) {
   assert_eq_msg(a, b, "Variables are not equal");
 }
 
-ccm_test(testArrayEqual) {
-  int array1[3] = {1, 2, 3};
-  assert_arr_eq(array1, array1, 3, 3);
-}
-
-ccm_test(testArrayNotEqual) {
-  int array1[3] = {1, 2, 3};
-  int array2[3] = {2, 3, 4};
-  assert_arr_eq(array1, array2, 3, 3);
-}
-
-ccm_test(testArrayNotEqualLength) {
-  int array1[3] = {1, 2, 3};
-  int array2[2] = {2, 3};
-  assert_arr_eq(array1, array2, 3, 2);
-}
-
-ccm_test(testArrayNotEqualTypes) {
-  int array1[3] = {1, 2, 3};
-  double array2[3] = {1.0, 2.0, 3.0};
-  assert_arr_eq(array1, array2, 3, 3);
-}
-
-ccm_test(testArrayEqualMsg) {
-  int array1[3] = {1, 2, 3};
-  int array2[3] = {1, 2, 3};
-  assert_arr_eq_msg(array1, array2, 3, 3, "Arrays are not equal");
-}
-
-ccm_end_section(unit_test_section)
+ccm_end_section(primitive_tests)
