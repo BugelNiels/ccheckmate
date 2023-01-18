@@ -12,6 +12,8 @@
 
 ImprocC is a simple unit testing framework for C. The framework was developed with the aim of making it as easy as possible to integrate it into existing frameworks. The main benefit of this framework is its simplificity. It is easy to use, easy to read and does not require any libraries!
 
+All tests are run in separate process to ensure that a segmentation fault does not cause everything to stop.
+
 ## Setting up
 
 1. Start by adding the `ccheckmate.c` and `ccheckmate.h` files to your project.
