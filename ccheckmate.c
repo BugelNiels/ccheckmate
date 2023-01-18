@@ -8,11 +8,11 @@
 
 #define ERROR_BUF_SIZE 20248
 
-#define CODE_BOLD "\e[1;37m"
+#define CODE_BOLD "\x1B[1;37m"
 #define CODE_RESET "\x1B[0m"
-#define CODE_RED "\e[1;31m"
-#define CODE_GREEN "\e[1;32m"
-#define CODE_ORANGE "\e[1;33m"
+#define CODE_RED "\x1B[1;31m"
+#define CODE_GREEN "\x1B[1;32m"
+#define CODE_ORANGE "\x1B[1;33m"
 
 #define PRIMITIVE_ERR_MSG(FORMAT) "%s and %s are not equal.\n\t\tExpected: " FORMAT "\n\t\tActual: " FORMAT "\n"
 #define ARRAY_ERR_MSG(FORMAT) \
@@ -409,9 +409,9 @@ static void __endTest(const char *test_name, struct timeval time) {
 }
 
 void __execute_test(void (*fp)(), const char *name) {
-    struct timeval before = {};
-    struct timeval after = {};
-    struct timeval result = {};
+    struct timeval before = {0};
+    struct timeval after = {0};
+    struct timeval result = {0};
     __startTest(name);
     gettimeofday(&before, NULL);
     fp();
@@ -422,9 +422,9 @@ void __execute_test(void (*fp)(), const char *name) {
 
 void __start_test_suite() {
     fprintf(stderr, "Initializing test suite...\n");
-    static int test_status = -1;
-    static int passed = 0;
-    static int failed = 0;
+    test_status = -1;
+    passed = 0;
+    failed = 0;
 }
 
 void __end_test_suite() {
