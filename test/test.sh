@@ -1,2 +1,2 @@
-gcc ../ccheckmate.c ccheckmate_unit_test.c -DTEST -Wl,--wrap,main
+gcc ../ccheckmate.c alltests.c -Wl,--wrap,main
 ./a.out

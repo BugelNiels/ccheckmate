@@ -4,8 +4,56 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-// TODO: default to error message for unrecongized types
-// TODO: do for all those lib functions
+#define ccm_begin_test_suite                \
+  int __wrap_main(int argc, char *argv[]) { \
+    __start_test_suite();
+
+#define ccm_end_test_suite \
+  __end_test_suite();      \
+  return 0;                \
+  }
+
+#define ccm_start_section                                            \
+  struct __func_list {                                               \
+    struct __func_list *next;                                        \
+    void (*f)(void);                                                 \
+    char *name;                                                      \
+  } *head = NULL;                                                    \
+  static void __testfunc_list_add(void (*f)(void), char *name) {     \
+    if (head == NULL) {                                              \
+      head = malloc(sizeof(struct __func_list));                     \
+      head->next = NULL;                                             \
+      head->f = f;                                                   \
+      head->name = name;                                             \
+    } else {                                                         \
+      struct __func_list *item = malloc(sizeof(struct __func_list)); \
+      item->next = NULL;                                             \
+      item->f = f;                                                   \
+      item->name = name;                                             \
+      struct __func_list *cur = head;                                \
+      while (cur->next != NULL) {                                    \
+        cur = cur->next;                                             \
+      }                                                              \
+      cur->next = item;                                              \
+    }                                                                \
+  }
+
+#define ccm_test(f)                                                                              \
+  static void f(void);                                                                           \
+  static void __attribute__((constructor)) __construct_##f(void) { __testfunc_list_add(f, #f); } \
+  static void f(void)
+
+#define MAKE_FN_NAME(x) void x(void)
+#define FUNCTION_NAME(signal) MAKE_FN_NAME(signal)
+
+#define ccm_end_section(A)                   \
+  MAKE_FN_NAME(A) {                          \
+    __start_section(#A);                     \
+    struct __func_list *cur;                 \
+    for (cur = head; cur; cur = cur->next) { \
+      __execute_test(cur->f, cur->name);     \
+    }                                        \
+  }
 
 #define assert_true(A) __assert_true((A), #A, "", __FILE__, __func__, __LINE__)
 #define assert_false(A) __assert_false((A), #A, "", __FILE__, __func__, __LINE__)
@@ -78,23 +126,13 @@
              : __assert_arr_eq_longdouble, default           \
              : __assert_arr_eq_item)(A, B, LEN_A, LEN_B, sizeof(*A), sizeof(*B), #A, #B, MSG, __FILE__, __func__, __LINE__)
 
-#define ccm_test(func) __execute_test(func, #func)
-
-#define BEGIN_CCHECK_MATE                   \
-  int __wrap_main(int argc, char *argv[]) { \
-    __start_test_suite();
-
-#define END_CCHECK_MATE \
-  __end_test_suite();   \
-  return 0;             \
-  }
-
-void start_section(const char *section_name);
 
 void __start_test_suite();
 void __end_test_suite();
-
+void __start_section(const char *section_name);
 void __execute_test(void (*fp)(), const char *test_name);
+
+// booleans
 
 void __assert_true(int bool_i, const char *bool_name, const char *msg, const char *file, const char *function,
                    int line);

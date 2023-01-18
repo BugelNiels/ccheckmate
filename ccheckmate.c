@@ -22,6 +22,9 @@
 typedef char byte;
 
 // TODO: see if we can remove the global variables :o
+
+// TODO: default to error message for unrecongized types
+// TODO: do for all those lib functions?
 static int test_status = -1;
 static int passed = 0;
 static int failed = 0;
@@ -385,7 +388,7 @@ void __assert_arr_eq_item(void *exp, void *act, int len_exp, int len_act, int el
   }
 }
 
-void start_section(const char *section_name) {
+void __start_section(const char *section_name) {
   // TODO: based on terminal width
   fprintf(stderr, "\n");
   print_divider();

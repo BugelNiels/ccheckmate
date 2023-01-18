@@ -27,33 +27,52 @@ Note that if the test suite is being run, the actual code is not!
 
 Let's starting by writing a few simple test functions. Any test functions you write must be of type `void` and must take no parameters.
 
+## Setting up a test section
+
+The unit tests are separated into sections. Before you can declare any test functions, be sure to first declare a section within which the functions are declared. This is done as follows:
+
+```C
+ccm_start_section;
+
+// Add test functions here
+
+ccm_end_section(my_section_name); // replace section_name with the name of your section WITHOUT quotes
+```
+
+Important: this can only be added once to every file, so if you want to have multiple sections, each of these sections should reside in separate files:
+
 ### Writing test functions
 
 We start by writing a simple test that checks whether two variables are equal:
+
 ```C
-void testEqual() {
-    int expected = 2;
-    int actual = 2;
-    assert_eq(expected, actual);
+ccm_test(testEqual) {
+  int expected = 2;
+  int actual = 2;
+  assert_eq(expected, actual);
 }
 ```
+
 Alternatively, we can also provide a message to be printed if the test fails:
+
 ```C
-void testPlus() {
-    assert_eq_msg(5, 2 + 3, "2+3 should equal 5");
+ccm_test(testPlus) {
+  assert_eq_msg(5, 2 + 3, "2+3 should equal 5");
 }
 ```
 
 we can also do this for arrays:
+
 ```C
-void testArrayEqual() {
-    int array1[3] = {1, 2, 3};
-    int array2[3] = {2, 3, 4};
-    assert_arr_eq(array1, array1, 3, 3);
+ccm_test(testArrayEqual) {
+  int array1[3] = {1, 2, 3};
+  int array2[3] = {2, 3, 4};
+  assert_arr_eq(array1, array2, 3, 3);
 }
 ```
 
 Note that at this point it is not possible to directly pass strings for comparison. For example, the following assert will not compile:
+
 ```C
     const char *test = "Hello world"
     assert_arr_eq(test, "Hello world", 11, 11);
@@ -61,22 +80,17 @@ Note that at this point it is not possible to directly pass strings for comparis
 
 ### Setting up test suite
 
-Unfortunately, these functions won't magically execute by themselves. To do this, we have to write the following block of code:
+These functions won't magically execute by themselves (actually for the most part they do, but there is still a little bit of manual labour involved). After declaring our sections, we have to declare the test suite and call the sections we want to execute.
+
+ To do this, we first set up the test suite and simply call the test section using its name, similar to how you call a function.
 
 ```C
-BEGIN_CCHECK_MATE
-    start_section("Testing single variables");
-    ccm_test(testEqual);
-    ccm_test(testPlus);
-
-    start_section("Testing arrays");
-    ccm_test(testArrayEqual);
-END_CCHECK_MATE
+ccm_begin_test_suite
+    my_section_name();
+ccm_end_test_suite
 ```
 
-The `BEGIN_CCHECK_MATE` and `END_CCHECK_MATE` are there to ensure that whatever is in between will be executed as part of the test suite. This block of code has to be added **outside** of any functions.
-
-The `start_section` function is primarily used to nicely organize your output. We can execute individual test functions by passing along their name to the `ccm_test` macro.
+The `ccm_begin_test_suite` and `ccm_end_test_suite` are there to ensure that whatever is in between will be executed as part of the test suite. This block of code has to be added **outside** of any functions.
 
 ### Running
 
@@ -84,36 +98,35 @@ The full file might look something as follows:
 ```C
 #include "ccheckmate.h"
 
-void testEqual() {
-    int expected = 2;
-    int actual = 2;
-    assert_eq(expected, actual);
+ccm_start_section;
+
+ccm_test(testEqual) {
+  int expected = 2;
+  int actual = 2;
+  assert_eq(expected, actual);
 }
 
-void testPlus() {
-    assert_eq_msg(5, 2 + 3, "2+3 should equal 5");
+ccm_test(testPlus) {
+  assert_eq_msg(5, 2 + 3, "2+3 should equal 5");
 }
 
-void testArrayEqual() {
-    int array1[3] = {1, 2, 3};
-    int array2[3] = {2, 3, 4};
-    assert_arr_eq(array1, array2, 3, 3);
+ccm_test(testArrayEqual) {
+  int array1[3] = {1, 2, 3};
+  int array2[3] = {2, 3, 4};
+  assert_arr_eq(array1, array2, 3, 3);
 }
 
-BEGIN_CCHECK_MATE
-    start_section("Testing single variables");
-    ccm_test(testEqual);
-    ccm_test(testPlus);
+ccm_end_section(example);   // Note the lack of quotes
 
-    start_section("Testing arrays");
-    ccm_test(testArrayEqual);
-END_CCHECK_MATE
+ccm_begin_test_suite;
+example();                  // This should be the same name as the section
+ccm_end_test_suite;
 ```
 
 This file is provided in the `examples` directory. We can compile the program using:
 
 ```sh
-gcc ccheckmate.c example/ctest.c -DTEST -Wl,--wrap,main
+gcc ccheckmate.c example/ctest.c -Wl,--wrap,main
 ```
 
 Running `./a.out` will then produce the following output:
@@ -121,18 +134,13 @@ Running `./a.out` will then produce the following output:
 Initializing test suite...
 
 --------------------------------------------------
-        Section: Testing single variables
+        Section: example
 --------------------------------------------------
 
  [Pass] testEqual (0.0s)
  [Pass] testPlus (0.0s)
-
---------------------------------------------------
-        Section: Testing arrays
---------------------------------------------------
-
  [Fail] testArrayEqual (0.0s)
-        ==> ctest.c:testArrayEqual():16
+        ==> example.c:testArrayEqual():16
         ==> failure: array1 and array2, items at index 0 do not match.
                 Expected: 1
                 Actual: 2
@@ -141,6 +149,7 @@ Initializing test suite...
 
 Tests: 2 Passed, 1 Failed, 3 Total
 There are test failures.
+
 ```
 
 ## Functions and macros
@@ -150,44 +159,59 @@ There are test failures.
 ### Assertions
 
 ```C
+assert_true(int)
+```
+Asserts whether the integer evaluates to true (not 0).
+
+```C
+assert_false(int)
+```
+Asserts whether the integer evaluates to false (0).
+
+```C
 assert_eq(expected, actual)
 ```
-> Asserts whether two primitives are equal.
+Asserts whether two primitives are equal.
 
 ```C
 assert_eq_msg(expected, actual, message)
 ```
-> Asserts whether two primitives are equal and prints the provided message if not.
+Asserts whether two primitives are equal and prints the provided message if not.
 
 
 ```C
 assert_arr_eq(expected, actual, len_expected, len_actual)
 ```
-> Asserts whether the contents of the two arrays are equal.
+Asserts whether the contents of the two arrays are equal.
 
 ```C
 assert_arr_eq_msg(expected, actual, len_expected, len_actual, message)
 ```
-> Asserts whether the contents of the two arrays are equal and prints the provided message if not.
+Asserts whether the contents of the two arrays are equal and prints the provided message if not.
 
 ### Test execution
 
 ```C
-BEGIN_CCHECK_MATE
+ccm_begin_test_suite;
 ```
-> Starts the test suit. Should always be accompanied with a corresponding `END_CCHECK_MATE`. This must be added outside of any functions and can only be added once to any project.
+Starts the test suit. Should always be accompanied with a corresponding `ccm_end_test_suite` within the same file. This must be added outside of any functions and can only be added once to any project. From here, you can call the test suites.
 
 ```C
-END_CCHECK_MATE
+ccm_end_test_suite;
 ```
-> Ends the test suit. Should always be accompanied with a corresponding `BEGIN_CCHECK_MATE`. This must be added outside of any functions and can only be added once to any project.
+Ends the test suit. Should always be accompanied with a corresponding `ccm_end_test_suite` within the same file. This must be added outside of any functions and can only be added once to any project.
 
 ```C
-start_section(const char* name);
+ccm_start_section;
 ```
-Starts a testing section. Useful to organize the console output.
+Starts a testing section. Can only be added once to any file. Starts a new section of the test suite. Must always be accompanied with a corresponding `ccm_end_section`.
+
+```C
+ccm_end_section(section_name);
+```
+Ends a testing section and gives the section the name `section_name`. The tests within this section can now be called from within the test suite using `<section_name>();`. For example if you named a section `myTest`: `ccm_end_section(myTest)` (note the lack of quotes), then you can call said test suite using `myTest()`. Can only be added once to any file. Starts a new section of the test suite. Must always be accompanied with a corresponding `ccm_end_section`.
 
 ```C
 ccm_test(test_func)
 ```
-Runs a particular testing function. The provided function should take no parameters and be of type void.
+Declares a function as a test function. Should be used from within a test suite, otherwise it will not compile.

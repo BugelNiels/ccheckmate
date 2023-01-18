@@ -3,32 +3,34 @@
 
 #include "../ccheckmate.h"
 
-void testAssertTrue() {
+ccm_start_section
+
+ccm_test(testAssertTrue) {
   int x = 7;
   assert_true(x);
   assert_true(1);
   assert_true(3 > 5);
 }
 
-void testAssertFalse() {
+ccm_test(testAssertFalse) {
   int x = 0;
   assert_false(x);
   assert_false(0);
   assert_false(3 < 5);
 }
 
-void testVariableEqualLiteral() {
+ccm_test(testVariableEqualLiteral) {
   int a = 0;
   assert_eq(a, 1);
 }
 
-void testVariableEqual() {
+ccm_test(testVariableEqual) {
   int a = 0;
   int b = 0;
   assert_eq(a, b);
 }
 
-void testDifferentVariablesEqual() {
+ccm_test(testDifferentVariablesEqual) {
   int a = 4;
   int b = 4;
   assert_eq(4, 3);
@@ -49,70 +51,51 @@ void testDifferentVariablesEqual() {
   assert_eq((long double)a, (long double)b);
 }
 
-void testVariableNotEqual() {
+ccm_test(testVariableNotEqual) {
   int a = 0;
   int b = 1;
   assert_eq(a, b);
 }
 
-void testVariableNotEqualTypes() {
+ccm_test(testVariableNotEqualTypes) {
   int a = 0;
   double b = 0;
   assert_eq(a, b);
 }
 
-void testVariableEqualMsg() {
+ccm_test(testVariableEqualMsg) {
   int a = 0;
   int b = 1;
   assert_eq_msg(a, b, "Variables are not equal");
 }
 
-void testArrayEqual() {
+ccm_test(testArrayEqual) {
   int array1[3] = {1, 2, 3};
   assert_arr_eq(array1, array1, 3, 3);
 }
 
-void testArrayNotEqual() {
+ccm_test(testArrayNotEqual) {
   int array1[3] = {1, 2, 3};
   int array2[3] = {2, 3, 4};
   assert_arr_eq(array1, array2, 3, 3);
 }
 
-void testArrayNotEqualLength() {
+ccm_test(testArrayNotEqualLength) {
   int array1[3] = {1, 2, 3};
   int array2[2] = {2, 3};
   assert_arr_eq(array1, array2, 3, 2);
 }
 
-void testArrayNotEqualTypes() {
+ccm_test(testArrayNotEqualTypes) {
   int array1[3] = {1, 2, 3};
   double array2[3] = {1.0, 2.0, 3.0};
   assert_arr_eq(array1, array2, 3, 3);
 }
 
-void testArrayEqualMsg() {
+ccm_test(testArrayEqualMsg) {
   int array1[3] = {1, 2, 3};
   int array2[3] = {1, 2, 3};
   assert_arr_eq_msg(array1, array2, 3, 3, "Arrays are not equal");
 }
 
-BEGIN_CCHECK_MATE
-start_section("Testing assertTrue");
-ccm_test(testAssertTrue);
-ccm_test(testAssertFalse);
-
-start_section("Testing assertEquals");
-ccm_test(testVariableEqualLiteral);
-ccm_test(testVariableEqual);
-ccm_test(testVariableNotEqual);
-ccm_test(testVariableNotEqualTypes);
-ccm_test(testVariableEqualMsg);
-ccm_test(testDifferentVariablesEqual);
-
-start_section("Testing assertArrayEquals");
-ccm_test(testArrayEqual);
-ccm_test(testArrayNotEqual);
-ccm_test(testArrayNotEqualLength);
-ccm_test(testArrayNotEqualTypes);
-ccm_test(testArrayEqualMsg);
-END_CCHECK_MATE
+ccm_end_section(unit_test_section)
