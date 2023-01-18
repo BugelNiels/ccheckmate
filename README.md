@@ -8,6 +8,8 @@
 </p>
 
 
+![stars](https://img.shields.io/github/stars/bugelniels/ccheckmate.svg) ![watchers](https://img.shields.io/github/watchers/bugelniels/ccheckmate.svg) ![license](https://img.shields.io/github/license/bugelniels/ccheckmate.svg) ![follow](https://img.shields.io/github/followers/bugelniels.svg?style=social&label=Follow&maxAge=2592000)
+
 ## About the project
 
 ImprocC is a simple unit testing framework for C. The framework was developed with the aim of making it as easy as possible to integrate it into existing frameworks. The main benefit of this framework is its simplificity. It is easy to use, easy to read and does not require any libraries!
@@ -61,13 +63,6 @@ ccm_test(testArrayEqual) {
   int array2[3] = {2, 3, 4};
   assert_arr_eq(array1, array2, 3, 3);
 }
-```
-
-Note that at this point it is not possible to directly pass strings for comparison. For example, the following assert will not compile:
-
-```C
-    const char *test = "Hello world"
-    assert_arr_eq(test, "Hello world", 11, 11);
 ```
 
 ### Running
