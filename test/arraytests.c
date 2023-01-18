@@ -3,8 +3,6 @@
 
 #include "../ccheckmate.h"
 
-ccm_begin_section;
-
 ccm_test(testArrayEqual) {
   int array1[3] = {1, 2, 3};
   assert_arr_eq(array1, array1, 3, 3);
@@ -33,5 +31,3 @@ ccm_test(testArrayEqualMsg) {
   int array2[3] = {1, 2, 3};
   assert_arr_eq_msg(array1, array2, 3, 3, "Arrays are not equal");
 }
-
-ccm_end_section(array_tests)
