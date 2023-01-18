@@ -31,3 +31,8 @@ ccm_test(testArrayEqualMsg) {
   int array2[3] = {1, 2, 3};
   assert_arr_eq_msg(array1, array2, 3, 3, "Arrays are not equal");
 }
+
+ccm_test(testStringArrayEqual) {
+  char *test = "Hello world";
+  assert_arr_eq(test, "Hello worls", 11, 11);
+}
