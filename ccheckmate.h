@@ -6,42 +6,46 @@
 
 // TODO: default to error message for unrecongized types
 // TODO: do for all those lib functions
-#define assert_eq(A, B)                                 \
-    _Generic((A), char                                  \
-             : __assert_eq_char, unsigned char          \
-             : __assert_eq_uchar, short                 \
-             : __assert_eq_short, unsigned short        \
-             : __assert_eq_ushort, int                  \
-             : __assert_eq_int, unsigned int            \
-             : __assert_eq_uint, long                   \
-             : __assert_eq_long, unsigned long          \
-             : __assert_eq_ulong, long long             \
-             : __assert_eq_longlong, unsigned long long \
-             : __assert_eq_ulonglong, float             \
-             : __assert_eq_float, double                \
-             : __assert_eq_double, long double          \
-             : __assert_eq_longdouble, default          \
-             : __assert_eq_item)(A, B, #A, #B, "", __FILE__, __func__, __LINE__)
 
-#define assert_eq_msg(A, B, MSG)                        \
-    _Generic((A), char                                  \
-             : __assert_eq_char, unsigned char          \
-             : __assert_eq_uchar, short                 \
-             : __assert_eq_short, unsigned short        \
-             : __assert_eq_ushort, int                  \
-             : __assert_eq_int, unsigned int            \
-             : __assert_eq_uint, long                   \
-             : __assert_eq_long, unsigned long          \
-             : __assert_eq_ulong, long long             \
-             : __assert_eq_longlong, unsigned long long \
-             : __assert_eq_ulonglong, float             \
-             : __assert_eq_float, double                \
-             : __assert_eq_double, long double          \
-             : __assert_eq_longdouble, default          \
-             : __assert_eq_item)(A, B, #A, #B, MSG, __FILE__, __func__, __LINE__)
+#define assert_true(A) __assert_true((A), #A, "", __FILE__, __func__, __LINE__)
+#define assert_false(A) __assert_false((A), #A, "", __FILE__, __func__, __LINE__)
+
+#define assert_eq(A, B)                               \
+  _Generic((A), char                                  \
+           : __assert_eq_char, unsigned char          \
+           : __assert_eq_uchar, short                 \
+           : __assert_eq_short, unsigned short        \
+           : __assert_eq_ushort, int                  \
+           : __assert_eq_int, unsigned int            \
+           : __assert_eq_uint, long                   \
+           : __assert_eq_long, unsigned long          \
+           : __assert_eq_ulong, long long             \
+           : __assert_eq_longlong, unsigned long long \
+           : __assert_eq_ulonglong, float             \
+           : __assert_eq_float, double                \
+           : __assert_eq_double, long double          \
+           : __assert_eq_longdouble, default          \
+           : __assert_eq_item)(A, B, #A, #B, "", __FILE__, __func__, __LINE__)
+
+#define assert_eq_msg(A, B, MSG)                      \
+  _Generic((A), char                                  \
+           : __assert_eq_char, unsigned char          \
+           : __assert_eq_uchar, short                 \
+           : __assert_eq_short, unsigned short        \
+           : __assert_eq_ushort, int                  \
+           : __assert_eq_int, unsigned int            \
+           : __assert_eq_uint, long                   \
+           : __assert_eq_long, unsigned long          \
+           : __assert_eq_ulong, long long             \
+           : __assert_eq_longlong, unsigned long long \
+           : __assert_eq_ulonglong, float             \
+           : __assert_eq_float, double                \
+           : __assert_eq_double, long double          \
+           : __assert_eq_longdouble, default          \
+           : __assert_eq_item)(A, B, #A, #B, MSG, __FILE__, __func__, __LINE__)
 
 #define assert_arr_eq(A, B, LEN_A, LEN_B) \
-    _Generic((A), char                                       \
+  _Generic((A), char                                       \
              : __assert_arr_eq_char, unsigned char*          \
              : __assert_arr_eq_uchar, short*                 \
              : __assert_arr_eq_short, unsigned short*        \
@@ -58,7 +62,7 @@
              : __assert_arr_eq_item)(A, B, LEN_A, LEN_B, sizeof(*A), sizeof(*B), #A, #B, "", __FILE__, __func__, __LINE__)
 
 #define assert_arr_eq_msg(A, B, LEN_A, LEN_B, MSG) \
-    _Generic((A), char                                       \
+  _Generic((A), char                                       \
              : __assert_arr_eq_char, unsigned char*          \
              : __assert_arr_eq_uchar, short*                 \
              : __assert_arr_eq_short, unsigned short*        \
@@ -76,14 +80,14 @@
 
 #define ccm_test(func) __execute_test(func, #func)
 
-#define BEGIN_CCHECK_MATE                     \
-    int __wrap_main(int argc, char *argv[]) { \
-        __start_test_suite();
+#define BEGIN_CCHECK_MATE                   \
+  int __wrap_main(int argc, char *argv[]) { \
+    __start_test_suite();
 
 #define END_CCHECK_MATE \
-    __end_test_suite(); \
-    return 0;           \
-    }
+  __end_test_suite();   \
+  return 0;             \
+  }
 
 void start_section(const char *section_name);
 
@@ -91,6 +95,9 @@ void __start_test_suite();
 void __end_test_suite();
 
 void __execute_test(void (*fp)(), const char *test_name);
+
+void __assert_true(int bool_i, const char *bool_name, const char *msg, const char *file, const char *function, int line);
+void __assert_false(int bool_i, const char *bool_name, const char *msg, const char *file, const char *function, int line);
 
 // primitives
 
