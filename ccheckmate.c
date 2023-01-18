@@ -27,7 +27,7 @@ struct __func_list {
   struct __func_list *next;
   void (*f)(void);
   char *func_name;
-  char *section_name;
+  char *suite_name;
 };
 
 static int test_status = -1;
@@ -65,7 +65,7 @@ void __register_test_func(void (*f)(void), char *name, char *sec_name) {
   item->f = f;
   item->func_name = name;
   // TODO: trim c extension?
-  item->section_name = sec_name;
+  item->suite_name = sec_name;
 
   if (funcs == NULL) {
     funcs = item;
@@ -81,10 +81,10 @@ void __register_test_func(void (*f)(void), char *name, char *sec_name) {
 // TODO: length dependent on terminal size?
 static void print_divider() { fprintf(stderr, "--------------------------------------------------\n"); }
 
-static void start_section(const char *section_name) {
+static void start_suite(const char *suite_name) {
   fprintf(stderr, "\n");
   print_divider();
-  fprintf(stderr, "\t%sSection: %s%s\n", CODE_BOLD, section_name, CODE_RESET);
+  fprintf(stderr, "\t%sTest Suite: %s%s\n", CODE_BOLD, suite_name, CODE_RESET);
   print_divider();
   fprintf(stderr, "\n");
 }
@@ -149,13 +149,13 @@ static void execute_test(void (*test_func)(), const char *test_name) {
   }
 }
 
-static void start_test_suite() {
+static void start_ccm_tests() {
   test_status = -1;
   passed = 0;
   failed = 0;
 }
 
-static void end_test_suite() {
+static void end_ccm_tests() {
   fprintf(stderr, "\n");
   print_divider();
   fprintf(stderr, "\n%sTests:%s ", CODE_BOLD, CODE_RESET);
@@ -189,17 +189,17 @@ static void end_test_suite() {
 }
 
 int __wrap_main(int argc, char *argv[]) {
-  start_test_suite();
+  start_ccm_tests();
   struct __func_list *cur;
   char *secName = NULL;
   for (cur = funcs; cur; cur = cur->next) {
-    if (secName == NULL || strcmp(secName, cur->section_name) != 0) {
-      start_section(cur->section_name);
-      secName = cur->section_name;
+    if (secName == NULL || strcmp(secName, cur->suite_name) != 0) {
+      start_suite(cur->suite_name);
+      secName = cur->suite_name;
     }
     execute_test(cur->f, cur->func_name);
   }
-  end_test_suite();
+  end_ccm_tests();
   return 0;
 }
 
