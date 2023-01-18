@@ -21,17 +21,19 @@ ImprocC is a simple unit testing framework for C. The framework was developed wi
 -Wl,--wrap,main
 ```
 
-Note that if the test suite is being run, the actual code is not!
+> Note that if the test suite is being run, the actual code is not!
 
-## Example Usage
+## Usage
 
 While using this framework, it is good practice to split unit tests concerned with different things into separate files. Tests that should be grouped together should reside in the same file.
 
-A test file consists only of a `.c` file. At the top of this file, include `ccheckmate.h`.
+A test file consists only of a `.c` file. At the top of this file, include `ccheckmate.h`. If you want to run the tests within a particular `.c` file, simply include said file in the compilation process.
 
-To declare a test function, simply write `ccm_test(<function_name>)`. Note that the function name cannot contain spaces in this case.
+The manner in which a test is declared is by writing: `ccm_test(<function_name>)`. Note that the function name cannot contain spaces in this case.
 
-For example, if we want to write a test that checks whether two variables are equal:
+### Example Usage
+
+For example, if we want to write a test that checks whether two variables are equal, we can write the following:
 
 ```C
 ccm_test(testEqual) {
@@ -71,7 +73,7 @@ Note that at this point it is not possible to directly pass strings for comparis
 The full file might look something as follows:
 
 ```C
-#include "ccheckmate.h"
+#include "../ccheckmate.h"
 
 ccm_test(testEqual) {
   int expected = 2;
@@ -159,6 +161,8 @@ Asserts whether the contents of the two arrays are equal and prints the provided
 ### Test execution
 
 ```C
-ccm_test(test_func)
+ccm_test(test_func) {
+    // Test code here
+}
 ```
-Declares a function as a test function. To group unit tests together, have them in the same source file.
+Declares a function as a test function. To group unit tests together, group them in the same source file.

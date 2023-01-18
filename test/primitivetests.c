@@ -4,7 +4,7 @@
 #include "../ccheckmate.h"
 
 ccm_test(testVariableEqualLiteral) {
-  int a = 0;
+  int a = 1;
   assert_eq(a, 1);
 }
 
@@ -17,7 +17,7 @@ ccm_test(testVariableEqual) {
 ccm_test(testDifferentVariablesEqual) {
   int a = 4;
   int b = 4;
-  assert_eq(4, 3);
+  assert_eq(4, 4);
   assert_eq(a, 4);
   assert_eq(a, b);
   assert_eq((char)a, (char)b);

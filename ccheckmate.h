@@ -6,9 +6,9 @@
 
 void __testfunc_list_add(void (*f)(void), char *name, char *sec_name);
 
-#define ccm_test(f)                                                                                        \
-  static void f(void);                                                                                     \
-  static void __attribute__((constructor)) __construct_##f(void) { __testfunc_list_add(f, #f, __FILE__); } \
+#define ccm_test(f)                                                                                             \
+  static void f(void);                                                                                          \
+  static void __attribute__((constructor)) __construct_##f(void) { __testfunc_list_add(f, #f, __BASE_FILE__); } \
   static void f(void)
 
 #define assert_true(A) __assert_true((A), #A, "", __FILE__, __func__, __LINE__)
