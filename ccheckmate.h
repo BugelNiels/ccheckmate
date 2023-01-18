@@ -96,8 +96,10 @@ void __end_test_suite();
 
 void __execute_test(void (*fp)(), const char *test_name);
 
-void __assert_true(int bool_i, const char *bool_name, const char *msg, const char *file, const char *function, int line);
-void __assert_false(int bool_i, const char *bool_name, const char *msg, const char *file, const char *function, int line);
+void __assert_true(int bool_i, const char *bool_name, const char *msg, const char *file, const char *function,
+                   int line);
+void __assert_false(int bool_i, const char *bool_name, const char *msg, const char *file, const char *function,
+                    int line);
 
 // primitives
 

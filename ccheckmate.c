@@ -53,15 +53,19 @@ static void print_divider() { fprintf(stderr, "---------------------------------
 
 // Primitives
 
-void __assert_true(int bool_i, const char *bool_name, const char *msg, const char *file, const char *function, int line) {
+void __assert_true(int bool_i, const char *bool_name, const char *msg, const char *file, const char *function,
+                   int line) {
   if (!bool_i) {
-    assert_err(msg, file, function, line, "Boolean condition %s is not True.\n\t\tExpected: True\n\t\tActual: False\n", bool_name);
+    assert_err(msg, file, function, line, "Boolean condition %s is not True.\n\t\tExpected: True\n\t\tActual: False\n",
+               bool_name);
   }
 }
 
-void __assert_false(int bool_i, const char *bool_name, const char *msg, const char *file, const char *function, int line) {
+void __assert_false(int bool_i, const char *bool_name, const char *msg, const char *file, const char *function,
+                    int line) {
   if (bool_i) {
-    assert_err(msg, file, function, line, "Boolean condition %s is not False.\n\t\tExpected: False\n\t\tActual: True\n", bool_name);
+    assert_err(msg, file, function, line, "Boolean condition %s is not False.\n\t\tExpected: False\n\t\tActual: True\n",
+               bool_name);
   }
 }
 
