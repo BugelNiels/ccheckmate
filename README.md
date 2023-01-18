@@ -36,7 +36,8 @@ ccm_start_section;
 
 // Add test functions here
 
-ccm_end_section(my_section_name); // replace section_name with the name of your section WITHOUT quotes
+// replace section_name with the name of your section WITHOUT quotes and WITHOUT spaces
+ccm_end_section(my_section_name);
 ```
 
 Important: this can only be added once to every file, so if you want to have multiple sections, each of these sections should reside in separate files:
@@ -98,7 +99,7 @@ The full file might look something as follows:
 ```C
 #include "ccheckmate.h"
 
-ccm_start_section;
+ccm_begin_section; // Must be added before any ccm_test declarations
 
 ccm_test(testEqual) {
   int expected = 2;
@@ -116,6 +117,7 @@ ccm_test(testArrayEqual) {
   assert_arr_eq(array1, array2, 3, 3);
 }
 
+// Name cannot contain spaces
 ccm_end_section(example);   // Note the lack of quotes
 
 ccm_begin_test_suite;
@@ -209,7 +211,7 @@ Starts a testing section. Can only be added once to any file. Starts a new secti
 ```C
 ccm_end_section(section_name);
 ```
-Ends a testing section and gives the section the name `section_name`. The tests within this section can now be called from within the test suite using `<section_name>();`. For example if you named a section `myTest`: `ccm_end_section(myTest)` (note the lack of quotes), then you can call said test suite using `myTest()`. Can only be added once to any file. Starts a new section of the test suite. Must always be accompanied with a corresponding `ccm_end_section`.
+Ends a testing section and gives the section the name `section_name`. The tests within this section can now be called from within the test suite using `<section_name>();`. For example if you named a section `myTest`: `ccm_end_section(myTest)` (note the lack of quotes), then you can call said test suite using `myTest()`. Can only be added once to any file. Starts a new section of the test suite. Must always be accompanied with a corresponding `ccm_end_section`. The section name cannot contain spaces.
 
 ```C
 ccm_test(test_func)
