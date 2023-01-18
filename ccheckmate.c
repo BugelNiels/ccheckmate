@@ -5,6 +5,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/time.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
 
 #define ERROR_BUF_SIZE 2048
 
@@ -20,16 +23,6 @@
   "%s and %s, items at index %d do not match.\n\t\tExpected: " FORMAT "\n\t\tActual: " FORMAT "\n"
 
 typedef char byte;
-
-// TODO: see if we can remove the global variables :o
-
-// TODO: default to error message for unrecongized types
-// TODO: do for all those lib functions?
-static int test_status = -1;
-static int passed = 0;
-static int failed = 0;
-static char err_msg[ERROR_BUF_SIZE];
-
 struct __func_list {
   struct __func_list *next;
   void (*f)(void);
@@ -37,6 +30,10 @@ struct __func_list {
   char *section_name;
 };
 
+static int test_status = -1;
+static int passed = 0;
+static int failed = 0;
+static char err_msg[ERROR_BUF_SIZE];
 struct __func_list *funcs = NULL;
 
 static void assert_err(const char *usrMsg, const char *file, const char *function, int line, const char *format, ...) {
@@ -49,9 +46,10 @@ static void assert_err(const char *usrMsg, const char *file, const char *functio
   if (strlen(usrMsg) > 0) {
     tmp += sprintf(tmp, "\t==> Message: %s\n", usrMsg);
   }
-  test_status = 0;
+  test_status = 1;
 }
 
+#if 0
 static void warning(const char *format, ...) {
   fprintf(stderr, "%s Warning:%s ", CODE_ORANGE, CODE_RESET);
   va_list args;
@@ -59,13 +57,14 @@ static void warning(const char *format, ...) {
   vfprintf(stderr, format, args);
   va_end(args);
 }
+#endif
 
-void __testfunc_list_add(void (*f)(void), char *name, char *sec_name) {
+void __register_test_func(void (*f)(void), char *name, char *sec_name) {
   struct __func_list *item = malloc(sizeof(struct __func_list));
   item->next = NULL;
   item->f = f;
   item->func_name = name;
-  // TODO: trim c extension
+  // TODO: trim c extension?
   item->section_name = sec_name;
 
   if (funcs == NULL) {
@@ -82,7 +81,129 @@ void __testfunc_list_add(void (*f)(void), char *name, char *sec_name) {
 // TODO: length dependent on terminal size?
 static void print_divider() { fprintf(stderr, "--------------------------------------------------\n"); }
 
-// Primitives
+static void start_section(const char *section_name) {
+  fprintf(stderr, "\n");
+  print_divider();
+  fprintf(stderr, "\t%sSection: %s%s\n", CODE_BOLD, section_name, CODE_RESET);
+  print_divider();
+  fprintf(stderr, "\n");
+}
+
+static int run_func_sandboxed(void (*test_func)()) {
+  err_msg[0] = '\0';
+  // Use pipes for writing output of sandboxed process to aprent process
+  int sandbox_pipe[2];
+  if (pipe(sandbox_pipe) == -1) {
+    // TODO: proper error message/handling here
+    fprintf(stderr, "Pipe Failed");
+    return -1;
+  }
+
+  pid_t child_pid = fork();
+  if (child_pid == 0) {
+    close(sandbox_pipe[0]);
+    test_status = 0;
+    // Run test function in separate process
+    test_func();
+    if (write(sandbox_pipe[1], err_msg, strlen(err_msg) + 1) < 0) {
+      fprintf(stderr, "Failed to write error messages from sandbox process\n");
+      return -1;
+    }
+    exit(test_status);
+  }
+  close(sandbox_pipe[1]);
+  if (read(sandbox_pipe[0], err_msg, ERROR_BUF_SIZE) < 0) {
+    fprintf(stderr, "Failed to read error messages from sandbox process\n");
+    return -1;
+  }
+  int return_status;
+  waitpid(child_pid, &return_status, 0);
+  return return_status;
+}
+
+static void execute_test(void (*test_func)(), const char *test_name) {
+  struct timeval before = {0};
+  struct timeval after = {0};
+  struct timeval time = {0};
+  gettimeofday(&before, NULL);
+
+  int return_status = run_func_sandboxed(test_func);
+
+  gettimeofday(&after, NULL);
+  timersub(&after, &before, &time);
+
+  if (return_status == 0) {
+    passed++;
+    fprintf(stderr, "%s [Pass]%s %s%s (%ld.%01lds)%s\n", CODE_GREEN, CODE_RESET, CODE_BOLD, test_name,
+            (size_t)time.tv_sec, (size_t)(time.tv_usec / 100000.0), CODE_RESET);
+  } else {
+    failed++;
+    fprintf(stderr, "%s [Fail]%s %s%s (%ld.%01lds)%s\n", CODE_RED, CODE_RESET, CODE_BOLD, test_name,
+            (size_t)time.tv_sec, (size_t)(time.tv_usec / 100000.0), CODE_RESET);
+    if (return_status == 139) {
+      // TODO: handle more/different exit codes
+      fprintf(stderr, "\t==> %s\n", "Segfault");
+    } else {
+      fprintf(stderr, "%s", err_msg);
+    }
+  }
+}
+
+static void start_test_suite() {
+  test_status = -1;
+  passed = 0;
+  failed = 0;
+}
+
+static void end_test_suite() {
+  fprintf(stderr, "\n");
+  print_divider();
+  fprintf(stderr, "\n%sTests:%s ", CODE_BOLD, CODE_RESET);
+  if (passed > 0) {
+    fprintf(stderr, "%s%d Passed%s, ", CODE_GREEN, passed, CODE_RESET);
+  }
+  if (failed > 0) {
+    fprintf(stderr, "%s%d Failed%s, ", CODE_RED, failed, CODE_RESET);
+  }
+  fprintf(stderr, "%d Total\n", passed + failed);
+
+  if (failed == 0 && passed > 0) {
+    fprintf(stderr, "%s", CODE_GREEN);
+    fprintf(stderr, "All tests passed.\n");
+  } else if (passed == 0 && failed == 0) {
+    fprintf(stderr, "%s", CODE_ORANGE);
+    fprintf(stderr, "No tests were run.\n");
+  } else {
+    fprintf(stderr, "%s", CODE_RED);
+    fprintf(stderr, "There are test failures.\n");
+  }
+  fprintf(stderr, "%s", CODE_RESET);
+  fflush(stderr);
+  struct __func_list *cur = funcs;
+  while (cur) {
+    struct __func_list *next = cur->next;
+    free(cur);
+    cur = next;
+  }
+  exit(failed > 0 ? EXIT_FAILURE : EXIT_SUCCESS);
+}
+
+int __wrap_main(int argc, char *argv[]) {
+  start_test_suite();
+  struct __func_list *cur;
+  char *secName = NULL;
+  for (cur = funcs; cur; cur = cur->next) {
+    if (secName == NULL || strcmp(secName, cur->section_name) != 0) {
+      start_section(cur->section_name);
+      secName = cur->section_name;
+    }
+    execute_test(cur->f, cur->func_name);
+  }
+  end_test_suite();
+  return 0;
+}
+
+// Bools
 
 void __assert_true(int bool_i, const char *bool_name, const char *msg, const char *file, const char *function,
                    int line) {
@@ -99,6 +220,8 @@ void __assert_false(int bool_i, const char *bool_name, const char *msg, const ch
                bool_name);
   }
 }
+
+// Primitives
 
 void __assert_eq_char(char exp, char act, const char *exp_name, const char *act_name, const char *msg, const char *file,
                       const char *function, int line) {
@@ -202,8 +325,8 @@ void __assertItemEqualsMsg(void *exp, void *act, int elem_size_exp, int elem_siz
   }
 }
 
-int check_arr_size(int len_exp, int len_act, const char *exp_name, const char *act_name, const char *msg,
-                   const char *file, const char *function, int line) {
+static int check_arr_size(int len_exp, int len_act, const char *exp_name, const char *act_name, const char *msg,
+                          const char *file, const char *function, int line) {
   if (len_exp != len_act) {
     assert_err(msg, file, function, line, "%s and %s do not have the same length.\n\t\tExpected: %d\n\t\tActual: %d\n",
                exp_name, act_name, len_exp, len_act);
@@ -414,103 +537,4 @@ void __assert_arr_eq_item(void *exp, void *act, int len_exp, int len_act, int el
       charB++;
     }
   }
-}
-
-void start_section(const char *section_name) {
-  // TODO: based on terminal width
-  fprintf(stderr, "\n");
-  print_divider();
-  fprintf(stderr, "\t%sSection: %s%s\n", CODE_BOLD, section_name, CODE_RESET);
-  print_divider();
-  fprintf(stderr, "\n");
-}
-
-static void __startTest(const char *test_name) {
-  if (test_status != -1) {
-    warning("Cannot start exp test while the previous test has not been terminated.\n");
-    return;
-  }
-  err_msg[0] = '\0';
-  test_status = 1;
-}
-
-static void __endTest(const char *test_name, struct timeval time) {
-  if (test_status == -1) {
-    warning("Cannot end exp test that has not been started yet.\n");
-    return;
-  }
-
-  if (test_status > 0) {
-    passed++;
-    fprintf(stderr, "%s [Pass]%s %s%s (%ld.%01lds)%s\n", CODE_GREEN, CODE_RESET, CODE_BOLD, test_name,
-            (size_t)time.tv_sec, (size_t)(time.tv_usec / 100000.0), CODE_RESET);
-
-  } else {
-    failed++;
-    fprintf(stderr, "%s [Fail]%s %s%s (%ld.%01lds)%s\n", CODE_RED, CODE_RESET, CODE_BOLD, test_name,
-            (size_t)time.tv_sec, (size_t)(time.tv_usec / 100000.0), CODE_RESET);
-    fprintf(stderr, "%s", err_msg);
-  }
-  test_status = -1;
-}
-
-void execute_test(void (*fp)(), const char *name) {
-  struct timeval before = {0};
-  struct timeval after = {0};
-  struct timeval result = {0};
-  __startTest(name);
-  gettimeofday(&before, NULL);
-  fp();
-  gettimeofday(&after, NULL);
-  timersub(&after, &before, &result);
-  __endTest(name, result);
-}
-
-void start_test_suite() {
-  test_status = -1;
-  passed = 0;
-  failed = 0;
-}
-
-void end_test_suite() {
-  fprintf(stderr, "\n");
-  print_divider();
-  fprintf(stderr, "\n%sTests:%s ", CODE_BOLD, CODE_RESET);
-  if (passed > 0) {
-    fprintf(stderr, "%s%d Passed%s, ", CODE_GREEN, passed, CODE_RESET);
-  }
-  if (failed > 0) {
-    fprintf(stderr, "%s%d Failed%s, ", CODE_RED, failed, CODE_RESET);
-  }
-  fprintf(stderr, "%d Total\n", passed + failed);
-
-  if (failed == 0 && passed > 0) {
-    fprintf(stderr, "%s", CODE_GREEN);
-    fprintf(stderr, "All tests passed.\n");
-  } else if (passed == 0 && failed == 0) {
-    fprintf(stderr, "%s", CODE_ORANGE);
-    fprintf(stderr, "No tests were run.\n");
-  } else {
-    fprintf(stderr, "%s", CODE_RED);
-    fprintf(stderr, "There are test failures.\n");
-  }
-  fprintf(stderr, "%s", CODE_RESET);
-  fflush(stderr);
-  exit(failed > 0 ? EXIT_FAILURE : EXIT_SUCCESS);
-}
-
-int __wrap_main(int argc, char *argv[]) {
-  start_test_suite();
-  struct __func_list *cur;
-  char *secName = NULL;
-  for (cur = funcs; cur; cur = cur->next) {
-    if (secName == NULL || strcmp(secName, cur->section_name) != 0) {
-        start_section(cur->section_name);
-        secName = cur->section_name;
-    }
-    execute_test(cur->f, cur->func_name);
-  }
-
-  end_test_suite();
-  return 0;
 }

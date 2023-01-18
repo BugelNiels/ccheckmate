@@ -1,14 +1,9 @@
 #ifndef C_CHECKMATE_H
 #define C_CHECKMATE_H
 
-#include <stdio.h>
-#include <stdlib.h>
-
-void __testfunc_list_add(void (*f)(void), char *name, char *sec_name);
-
-#define ccm_test(f)                                                                                        \
-  static void f(void);                                                                                     \
-  static void __attribute__((constructor)) __construct_##f(void) { __testfunc_list_add(f, #f, __FILE__); } \
+#define ccm_test(f)                                                                                              \
+  static void f(void);                                                                                           \
+  static void __attribute__((constructor)) __construct_##f(void) { __register_test_func(f, #f, __BASE_FILE__); } \
   static void f(void)
 
 #define assert_true(A) __assert_true((A), #A, "", __FILE__, __func__, __LINE__)
@@ -81,6 +76,8 @@ void __testfunc_list_add(void (*f)(void), char *name, char *sec_name);
              : __assert_arr_eq_double, long double*          \
              : __assert_arr_eq_longdouble, default           \
              : __assert_arr_eq_item)(A, B, LEN_A, LEN_B, sizeof(*A), sizeof(*B), #A, #B, MSG, __FILE__, __func__, __LINE__)
+
+void __register_test_func(void (*f)(void), char *name, char *sec_name);
 
 // booleans
 
