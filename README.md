@@ -14,18 +14,28 @@
 
 ImprocC is a simple unit testing framework for C. The framework was developed with the aim of making it as easy as possible to integrate it into existing frameworks. The main benefit of this framework is its simplificity. It is easy to use, easy to read and does not require any libraries!
 
-All tests are run in separate process to ensure that a segmentation fault does not cause everything to stop.
+All tests are run in separate process to ensure that every test will still run when an unexpected error occurs.
 
 ## Setting up
 
 1. Start by adding the `ccheckmate.c` and `ccheckmate.h` files to your project.
-2. Write the tests according to the specifications below
-3. Add the following flag to your compilation if you want to run the tests:
-```sh
--Wl,--wrap,main
-```
 
-> Note that if the tests are being run, the actual code is not!
+    You can do this easily by cloning (the latest commit of) this repository:
+
+    ```sh
+    git clone --depth=1 https://github.com/BugelNiels/ccheckmate.git
+    ```
+
+    Next, include the `ccheckmate.c` file in your compilation process.
+
+2. Write the tests according to the specifications below.
+3. Add the following flag to your compilation if you want to run the tests:
+
+    ```sh
+    -Wl,--wrap,main
+    ```
+
+Note that if the tests are being run, the actual code is not.
 
 ## Usage
 
@@ -33,7 +43,7 @@ While using this framework, it is good practice to split unit tests concerned wi
 
 A test file consists only of a `.c` file. At the top of this file, include `ccheckmate.h`. If you want to run the tests within a particular `.c` file, simply include said file in the compilation process.
 
-The manner in which a test is declared is by writing: `ccm_test(<function_name>)`. Note that the function name cannot contain spaces in this case.
+The manner in which a test is declared is by writing: `ccm_test(<test_name>) { .. }`. Note that the test name cannot contain spaces.
 
 ### Example Usage
 
@@ -120,7 +130,7 @@ Alternatively, you can use the `runexample.sh` script which will do the compilat
 
 ## Functions and macros
 
-> Disclaimer: The framework works primarily with macros to facilitate flexible and easy-to-read usage. However, this can potentially result in large error messages if you get the syntax wrong. It is definitely possible to see what is going wrong, but this can be more difficult due to the macro expansions As such, always be sure to double check that you are using it in the correct way.
+The framework works primarily with macros to facilitate flexible and easy-to-read usage. However, this can potentially result in large error messages if you get the syntax wrong. It is definitely possible to see what is going wrong, but this can be more difficult due to the macro expansions. As such, always be sure to double check that you are using it in the correct way.
 
 ### Assertions
 
